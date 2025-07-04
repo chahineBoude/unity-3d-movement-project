@@ -816,6 +816,10 @@ PrefabInstance:
       value: 35
       objectReference: {fileID: 0}
     - target: {fileID: 8320167931626246241, guid: 0cadf5e0823e38448ad1ffd42d885846, type: 3}
+      propertyPath: rotateToTargetTime
+      value: 0.67
+      objectReference: {fileID: 0}
+    - target: {fileID: 8320167931626246241, guid: 0cadf5e0823e38448ad1ffd42d885846, type: 3}
       propertyPath: sprintAcceleration
       value: 50
       objectReference: {fileID: 0}

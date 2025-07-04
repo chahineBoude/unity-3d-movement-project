@@ -6,6 +6,7 @@ public class PlayerAnimation : MonoBehaviour
     [SerializeField] private float movementBlendSpeed = 4f;
     private PlayerMovementInput _movementInput;
     private PlayerState _playerState;
+    private PlayerController _playerController;
 
     private static int inputXHash = Animator.StringToHash("InputX");
     private static int inputYHash = Animator.StringToHash("InputY");
@@ -13,12 +14,16 @@ public class PlayerAnimation : MonoBehaviour
     private static int isGroundedHash = Animator.StringToHash("IsGrounded");
     private static int isFallingHash = Animator.StringToHash("IsFalling");
     private static int isJumpingHash = Animator.StringToHash("IsJumping");
+    private static int rotationMismatchHash = Animator.StringToHash("RotationMismatch");
+    private static int isIdlingHash = Animator.StringToHash("IsIdling");
+    private static int IsRotatingToTargetHash = Animator.StringToHash("IsRotatingToTarget");
     private Vector3 _currentBlendInput = Vector3.zero;
 
     private void Awake()
     {
         _movementInput = GetComponent<PlayerMovementInput>();
         _playerState = GetComponent<PlayerState>();
+        _playerController = GetComponent<PlayerController>();
     }
 
     private void Update()
@@ -35,7 +40,9 @@ public class PlayerAnimation : MonoBehaviour
         bool isFalling = _playerState.CurrentPlayerState == PlayerStateEnum.Falling;
         bool isGrounded = _playerState.IsGroundedState();
 
-        Vector2 inputTarget = isSprinting ? _movementInput.MovementVector * 1.5f : _movementInput.MovementVector;
+        Vector2 inputTarget = isSprinting ? _movementInput.MovementVector * 1.5f :
+                                isRunning ? _movementInput.MovementVector * 1f :
+                                _movementInput.MovementVector * 0.5f;
         _currentBlendInput = Vector3.Lerp(_currentBlendInput, inputTarget, movementBlendSpeed * Time.deltaTime);
         _animator.SetFloat(inputXHash, _currentBlendInput.x);
         _animator.SetFloat(inputYHash, _currentBlendInput.y);
@@ -43,6 +50,9 @@ public class PlayerAnimation : MonoBehaviour
         _animator.SetBool(isJumpingHash, isJumping);
         _animator.SetBool(isGroundedHash, isGrounded);
         _animator.SetBool(isFallingHash, isFalling);
+        _animator.SetFloat(rotationMismatchHash, _playerController.RotationMismatch);
+        _animator.SetBool(isIdlingHash, isIdling);
+        _animator.SetBool(IsRotatingToTargetHash, _playerController.IsRotatingToTarget);
     }
 
 }

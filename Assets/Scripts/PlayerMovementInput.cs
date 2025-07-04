@@ -12,6 +12,8 @@ public class PlayerMovementInput : MonoBehaviour, PlayerInputActions.IMovementAc
 
     public bool SprintToggleOn { get; private set; }
 
+    public bool WalkToggleOn { get; private set; }
+
     public bool JumpPressed { get; private set; }
 
     private void OnEnable()
@@ -60,5 +62,14 @@ public class PlayerMovementInput : MonoBehaviour, PlayerInputActions.IMovementAc
         if (!context.performed) return;
 
         JumpPressed = true;
+    }
+
+    public void OnWalkToggle(InputAction.CallbackContext context)
+    {
+        {
+            if (!context.performed)
+                return;
+            WalkToggleOn = !WalkToggleOn;
+        }
     }
 }

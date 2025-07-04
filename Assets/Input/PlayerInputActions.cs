@@ -126,6 +126,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""WalkToggle"",
+                    ""type"": ""Button"",
+                    ""id"": ""a37872e1-1a55-4737-b5e6-0d638c0681e8"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -282,6 +291,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""96004978-1e22-4c47-8878-9e55c0cddfdc"",
+                    ""path"": ""<Keyboard>/ctrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""WalkToggle"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -294,6 +314,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Movement_Look = m_Movement.FindAction("Look", throwIfNotFound: true);
         m_Movement_SprintToggle = m_Movement.FindAction("SprintToggle", throwIfNotFound: true);
         m_Movement_Jump = m_Movement.FindAction("Jump", throwIfNotFound: true);
+        m_Movement_WalkToggle = m_Movement.FindAction("WalkToggle", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -378,6 +399,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Movement_Look;
     private readonly InputAction m_Movement_SprintToggle;
     private readonly InputAction m_Movement_Jump;
+    private readonly InputAction m_Movement_WalkToggle;
     /// <summary>
     /// Provides access to input actions defined in input action map "Movement".
     /// </summary>
@@ -405,6 +427,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Movement/Jump".
         /// </summary>
         public InputAction @Jump => m_Wrapper.m_Movement_Jump;
+        /// <summary>
+        /// Provides access to the underlying input action "Movement/WalkToggle".
+        /// </summary>
+        public InputAction @WalkToggle => m_Wrapper.m_Movement_WalkToggle;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -443,6 +469,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
+            @WalkToggle.started += instance.OnWalkToggle;
+            @WalkToggle.performed += instance.OnWalkToggle;
+            @WalkToggle.canceled += instance.OnWalkToggle;
         }
 
         /// <summary>
@@ -466,6 +495,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
+            @WalkToggle.started -= instance.OnWalkToggle;
+            @WalkToggle.performed -= instance.OnWalkToggle;
+            @WalkToggle.canceled -= instance.OnWalkToggle;
         }
 
         /// <summary>
@@ -534,5 +566,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnJump(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "WalkToggle" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnWalkToggle(InputAction.CallbackContext context);
     }
 }

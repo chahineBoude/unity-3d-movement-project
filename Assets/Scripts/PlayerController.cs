@@ -10,11 +10,14 @@ public class PlayerController : MonoBehaviour
     public bool IsRotatingToTarget { get; private set; } = false;
 
     [Header("Movement Settings")]
+
+    public float walkAcceleration = 0.15f;
+    public float walkSpeed = 3f;
     public float runAcceleration = 0.25f;
-    public float runSpeed = 4f;
+    public float runSpeed = 6f;
     public float drag = 0.1f;
     public float sprintAcceleration = 0.5f;
-    public float sprintSpeed = 7f;
+    public float sprintSpeed = 9f;
     public float jumpSpeed = 1f;
     public float gravity = 25f;
 
@@ -33,6 +36,7 @@ public class PlayerController : MonoBehaviour
     public Vector2 _playerTargetRotation = Vector2.zero;
     private float verticalVelocity = 0f;
     private float _rotatingToTargetTimer = 0f;
+    private bool _isRotatingClockwise = false;
 
     private void Awake()
     {
@@ -49,12 +53,15 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateMovementState()
     {
+        bool canRun = CanRun();
         bool isMovementPressed = _playerMovementInput.MovementVector != Vector2.zero;
         bool isMovingLaterally = IsMovingLaterally();
+        bool isWalking = (isMovingLaterally && !canRun) || _playerMovementInput.WalkToggleOn;
         bool isSprinting = _playerMovementInput.SprintToggleOn && isMovingLaterally;
         bool isGrounded = IsGrounded();
 
-        PlayerStateEnum lateralState = isSprinting ? PlayerStateEnum.Sprinting :
+        PlayerStateEnum lateralState = isWalking ? PlayerStateEnum.Walking :
+                                        isSprinting ? PlayerStateEnum.Sprinting :
                                         isMovingLaterally || isMovementPressed ? PlayerStateEnum.Running : PlayerStateEnum.Idling;
         _playerState.SetCurrentPlayerState(lateralState);
 
@@ -88,10 +95,13 @@ public class PlayerController : MonoBehaviour
     private void HandleLateralMovement()
     {
         bool isSprinting = _playerState.CurrentPlayerState == PlayerStateEnum.Sprinting;
+        bool isWalking = _playerState.CurrentPlayerState == PlayerStateEnum.Walking;
         bool isGrounded = _playerState.IsGroundedState();
 
-        float lateralAcceleration = isSprinting ? sprintAcceleration : runAcceleration;
-        float lateralSpeed = isSprinting ? sprintSpeed : runSpeed;
+        float lateralAcceleration = isWalking ? walkAcceleration :
+                                    isSprinting ? sprintAcceleration : runAcceleration;
+        float lateralSpeed = isWalking ? walkSpeed :
+                            isSprinting ? sprintSpeed : runSpeed;
 
         Vector3 cameraForward = new Vector3(_camera.transform.forward.x, 0f, _camera.transform.forward.z).normalized;
         Vector3 cameraRight = new Vector3(_camera.transform.right.x, 0f, _camera.transform.right.z).normalized;
@@ -133,17 +143,47 @@ public class PlayerController : MonoBehaviour
         _playerTargetRotation.x += transform.eulerAngles.x + lookSensitivityH * _playerMovementInput.LookVector.x;
         bool isIdling = _playerState.CurrentPlayerState == PlayerStateEnum.Idling;
         IsRotatingToTarget = _rotatingToTargetTimer > 0;
-        if (!isIdling || Mathf.Abs(RotationMismatch) > 90f || IsRotatingToTarget)
+        if (!isIdling)
         {
-            Quaternion targetRotationX = Quaternion.Euler(0f, _playerTargetRotation.x, 0f);
-            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotationX, playerRotationSpeed * Time.deltaTime);
-            if (Mathf.Abs(RotationMismatch) > 90f)
-            {
-                _rotatingToTargetTimer = rotateToTargetTime;
-            }
-            _rotatingToTargetTimer -= Time.deltaTime;
+            RotatePlayerToTarget();
+        }
+        else if (Mathf.Abs(RotationMismatch) > 90f || IsRotatingToTarget)
+        {
+            UpdateIdleRotation(90f);
         }
         _camera.transform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.x, 0f);
+
+        Vector3 camFowardProjectedXZ = new Vector3(_camera.transform.forward.x, 0f, _camera.transform.forward.z).normalized;
+        Vector3 crossProduct = Vector3.Cross(transform.forward, camFowardProjectedXZ);
+        float sign = Mathf.Sign(Vector3.Dot(crossProduct, transform.up));
+        RotationMismatch = sign * Vector3.Angle(transform.forward, camFowardProjectedXZ);
+    }
+
+    private void UpdateIdleRotation(float rotationTolerance)
+    {
+        if (Mathf.Abs(RotationMismatch) > rotationTolerance)
+        {
+            _rotatingToTargetTimer = rotateToTargetTime;
+            _isRotatingClockwise = RotationMismatch > rotationTolerance;
+        }
+        _rotatingToTargetTimer -= Time.deltaTime;
+
+        if (_isRotatingClockwise && RotationMismatch > 0f || !_isRotatingClockwise && RotationMismatch < 0f)
+        {
+            RotatePlayerToTarget();
+        }
+
+    }
+
+    private void RotatePlayerToTarget()
+    {
+        Quaternion targetRotationX = Quaternion.Euler(0f, _playerTargetRotation.x, 0f);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotationX, playerRotationSpeed * Time.deltaTime);
+    }
+
+    public bool CanRun()
+    {
+        return _playerMovementInput.MovementVector.y >= Mathf.Abs(_playerMovementInput.MovementVector.x);
     }
 
 }
